@@ -2,6 +2,11 @@ from __future__ import print_function
 
 import argparse
 import yaml
+import sys,os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # __file__获取执行文件相对路径，整行为取上一级的上一级目录
+
+sys.path.append(BASE_DIR)
 
 from mimic3benchmark.mimic3csv import *
 from mimic3benchmark.preprocessing import add_hcup_ccs_2015_groups, make_phenotype_label_matrix
@@ -11,7 +16,7 @@ parser = argparse.ArgumentParser(description='Extract per-subject data from MIMI
 parser.add_argument('mimic3_path', type=str, help='Directory containing MIMIC-III CSV files.')
 parser.add_argument('output_path', type=str, help='Directory where per-subject data should be written.')
 parser.add_argument('--event_tables', '-e', type=str, nargs='+', help='Tables from which to read events.',default=['CHARTEVENTS', 'LABEVENTS', 'OUTPUTEVENTS'])
-parser.add_argument('--phenotype_definitions', '-p', type=str, default='resources/hcup_ccs_2015_definitions.yaml',
+parser.add_argument('--phenotype_definitions', '-p', type=str, default='./resources/hcup_ccs_2015_definitions.yaml',
                     help='YAML file with phenotype definitions.')
 parser.add_argument('--itemids_file', '-i', type=str, help='CSV containing list of ITEMIDs to keep.')
 parser.add_argument('--verbose', '-v', type=int, help='Level of verbosity in output.', default=1)
@@ -85,7 +90,7 @@ prescriptions.to_csv(os.path.join(args.output_path, 'all_prescriptions.csv'), in
 print ('all_prescriptions_done')
 
 #====================================================================================
-phenotypes = add_hcup_ccs_2015_groups(diagnoses, yaml.load(open(args.phenotype_definitions, 'r')))
+phenotypes = add_hcup_ccs_2015_groups(diagnoses, yaml.load(open(args.phenotype_definitions, 'r'),Loader=yaml.FullLoader))
 make_phenotype_label_matrix(phenotypes, stays).to_csv(os.path.join(args.output_path, 'phenotype_labels.csv'),
                                                       index=False, quoting=csv.QUOTE_NONNUMERIC)
 #====================================================================================
